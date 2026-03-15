@@ -100,6 +100,280 @@
 </head>
 <body style="background-color:#05050A;">
     <!-- ========================================== -->
+<!-- 第一步：HTML 部分 -->
+<!-- 放置位置：请找到你的代码中 <body style="background-color:#05050A;"> 这一行 -->
+<!-- 然后在它的【下一行】直接粘贴下面的 <canvas> 代码 -->
+<!-- ========================================== -->
+<canvas id="particleCanvas" class="fixed top-0 left-0 w-full h-full pointer-events-none z-0"></canvas>
+
+<!-- ========================================== -->
+<!-- 第二步：JS 逻辑部分 (已增加视差感) -->
+<!-- 将这段代码粘贴在你页面最底部的 <script> 标签内 -->
+<!-- ========================================== -->
+<script>
+(function() {
+    const canvas = document.getElementById('particleCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    let particles = [];
+    const particleCount = 70; // 稍稍增加粒子数量提升层次感
+    const connectionDistance = 160; 
+    const mouseRadius = 150; 
+    
+    // 视差参数
+    let scrollY = window.scrollY;
+    let targetScrollY = window.scrollY;
+
+    let mouse = { x: -1000, y: -1000 };
+
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+
+    // 监听滚动事件，用于计算视差
+    window.addEventListener('scroll', () => {
+        targetScrollY = window.scrollY;
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+    });
+
+    class Particle {
+        constructor() {
+            this.init();
+        }
+
+        init() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.vx = (Math.random() - 0.5) * 0.4; 
+            this.vy = (Math.random() - 0.5) * 0.4;
+            this.radius = Math.random() * 2 + 1;
+            
+            // 为每个粒子赋予随机的“深度”系数 (0.2 到 0.8)
+            // 系数越大，滚动时移动越快（显得离镜头越近）
+            this.parallaxFactor = Math.random() * 0.6 + 0.2;
+        }
+
+        update() {
+            // 基础漂浮移动
+            this.x += this.vx;
+            this.y += this.vy;
+
+            // 边界检查（考虑画布平移，稍微放宽边界）
+            if (this.x < -50) this.x = canvas.width + 50;
+            if (this.x > canvas.width + 50) this.x = -50;
+            if (this.y < -50) this.y = canvas.height + 50;
+            if (this.y > canvas.height + 50) this.y = -50;
+
+            // 躲避鼠标逻辑
+            const dx = mouse.x - this.x;
+            const dy = (mouse.y - this.y); // 注意：鼠标坐标是相对于视口的
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < mouseRadius) {
+                const force = (mouseRadius - distance) / mouseRadius;
+                const angle = Math.atan2(dy, dx);
+                this.x -= Math.cos(angle) * force * 2;
+                this.y -= Math.sin(angle) * force * 2;
+            }
+        }
+
+        draw(offsetY) {
+            // 绘制时根据滚动偏移量进行平移
+            // 实际 Y = 初始 Y + (当前滚动距离 * 视差系数)
+            const drawY = (this.y - offsetY * this.parallaxFactor) % canvas.height;
+            const finalY = drawY < 0 ? drawY + canvas.height : drawY;
+
+            ctx.beginPath();
+            ctx.arc(this.x, finalY, this.radius, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(0, 240, 255, ${0.1 + this.parallaxFactor * 0.3})`; // 越近越亮
+            ctx.fill();
+            
+            // 存储当前绘制坐标供连线使用
+            this.currentDrawX = this.x;
+            this.currentDrawY = finalY;
+        }
+    }
+
+    function createParticles() {
+        for (let i = 0; i < particleCount; i++) {
+            particles.push(new Particle());
+        }
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // 平滑滚动数值，减少抖动
+        scrollY += (targetScrollY - scrollY) * 0.1;
+
+        for (let i = 0; i < particles.length; i++) {
+            const p1 = particles[i];
+            p1.update();
+            p1.draw(scrollY);
+
+            // 连线逻辑
+            for (let j = i + 1; j < particles.length; j++) {
+                const p2 = particles[j];
+                const dx = p1.currentDrawX - p2.currentDrawX;
+                const dy = p1.currentDrawY - p2.currentDrawY;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist < connectionDistance) {
+                    ctx.beginPath();
+                    // 线条亮度也随视差系数变化
+                    const alpha = 0.15 * (1 - dist / connectionDistance) * p1.parallaxFactor;
+                    ctx.strokeStyle = `rgba(0, 240, 255, ${alpha})`;
+                    ctx.lineWidth = 0.5;
+                    ctx.moveTo(p1.currentDrawX, p1.currentDrawY);
+                    ctx.lineTo(p2.currentDrawX, p2.currentDrawY);
+                    ctx.stroke();
+                }
+            }
+        }
+        requestAnimationFrame(animate);
+    }
+
+    createParticles();
+    animate();
+})();
+</script>
+    <!-- ========================================== -->
+<!-- 第一步：HTML 部分 -->
+<!-- 放置位置：请找到你的代码中 <body style="background-color:#05050A;"> 这一行 -->
+<!-- 然后在它的【下一行】直接粘贴下面的 <canvas> 代码 -->
+<!-- ========================================== -->
+<canvas id="particleCanvas" class="fixed top-0 left-0 w-full h-full pointer-events-none z-0"></canvas>
+
+<!-- 接下来是你原有的机器人遮罩层代码 -->
+<div id="robotCover" class="fixed inset-0 z-[100] bg-[#05050A] flex flex-col items-center justify-center transition-all duration-700 ease-in-out">
+    <!-- ... 原有内容 ... -->
+</div>
+
+
+<!-- ========================================== -->
+<!-- 第二步：JS 逻辑部分 -->
+<!-- 放置位置：建议放在你页面最底部的 <script> 标签内 -->
+<!-- 它会自动寻找 ID 为 particleCanvas 的画布并开始绘制 -->
+<!-- ========================================== -->
+<script>
+(function() {
+    const canvas = document.getElementById('particleCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    let particles = [];
+    const particleCount = 60; // 粒子数量
+    const connectionDistance = 150; // 连线距离
+    const mouseRadius = 150; // 粒子躲避光标的半径
+
+    let mouse = { x: -1000, y: -1000 };
+
+    // 自动调整画布大小，确保全屏铺满
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+
+    // 追踪鼠标位置，用于粒子互动
+    document.addEventListener('mousemove', (e) => {
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+    });
+
+    class Particle {
+        constructor() {
+            this.init();
+        }
+
+        init() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.vx = (Math.random() - 0.5) * 0.5; // 漂浮速度
+            this.vy = (Math.random() - 0.5) * 0.5;
+            this.radius = Math.random() * 2 + 1;
+        }
+
+        update() {
+            this.x += this.vx;
+            this.y += this.vy;
+
+            // 碰到边界反弹
+            if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+            if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+
+            // 躲避鼠标逻辑：当鼠标靠近时，粒子会向反方向轻微移动
+            const dx = mouse.x - this.x;
+            const dy = mouse.y - this.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < mouseRadius) {
+                const force = (mouseRadius - distance) / mouseRadius;
+                const angle = Math.atan2(dy, dx);
+                this.x -= Math.cos(angle) * force * 2;
+                this.y -= Math.sin(angle) * force * 2;
+            }
+        }
+
+        draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(0, 240, 255, 0.3)'; // 粒子颜色
+            ctx.fill();
+        }
+    }
+
+    function createParticles() {
+        for (let i = 0; i < particleCount; i++) {
+            particles.push(new Particle());
+        }
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        for (let i = 0; i < particles.length; i++) {
+            const p1 = particles[i];
+            p1.update();
+            p1.draw();
+
+            // 计算粒子间的距离并绘制连线
+            for (let j = i + 1; j < particles.length; j++) {
+                const p2 = particles[j];
+                const dx = p1.x - p2.x;
+                const dy = p1.y - p2.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist < connectionDistance) {
+                    ctx.beginPath();
+                    // 线条透明度随距离增加而变淡
+                    ctx.strokeStyle = `rgba(0, 240, 255, ${0.15 * (1 - dist / connectionDistance)})`;
+                    ctx.lineWidth = 0.5;
+                    ctx.moveTo(p1.x, p1.y);
+                    ctx.lineTo(p2.x, p2.y);
+                    ctx.stroke();
+                }
+            }
+        }
+        requestAnimationFrame(animate);
+    }
+
+    createParticles();
+    animate();
+})();
+</script>
+    <!-- ========================================== -->
 <!-- 步骤 1: 将以下全部代码复制，并粘贴到你原本代码中 <body> 标签的【正下方】 -->
 <!-- ========================================== -->
 
@@ -146,7 +420,7 @@
                 CLICK TO START
             </p>
             <p class="text-cyan-100/60 text-sm mt-3 tracking-widest group-hover:text-cyan-100 transition-colors">
-                >> 点击唤醒具身智能引擎 <<
+                >> 欢迎查阅陈欣雨个人简历🙋 <<
             </p>
         </div>
     </div>
