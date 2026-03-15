@@ -99,6 +99,88 @@
     </style>
 </head>
 <body style="background-color:#05050A;">
+    <!-- ========================================== -->
+<!-- 步骤 1: 将以下全部代码复制，并粘贴到你原本代码中 <body> 标签的【正下方】 -->
+<!-- ========================================== -->
+
+<!-- 机器人全屏遮罩层 -->
+<div id="robotCover" class="fixed inset-0 z-[100] bg-[#05050A] flex flex-col items-center justify-center transition-all duration-700 ease-in-out">
+    <div class="relative cursor-pointer group flex flex-col items-center" onclick="enterResume()">
+        
+        <!-- 赛博朋克发光背景晕影 -->
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-cyan-500/20 blur-[60px] rounded-full group-hover:bg-purple-500/30 transition-colors duration-700 animate-pulse"></div>
+        
+        <!-- 可爱机器人 SVG (带上下浮动特效) -->
+        <svg class="w-48 h-48 relative z-10 transform transition-all duration-500 group-hover:scale-110 group-hover:-translate-y-4 animate-[bounce_3s_infinite]" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- 接收天线 -->
+            <path d="M100 45 L100 15" stroke="#00f0ff" stroke-width="5" stroke-linecap="round"/>
+            <!-- 天线发光球 (带雷达波纹动画) -->
+            <circle cx="100" cy="15" r="6" fill="#8a2be2" class="animate-ping" style="animation-duration: 1.5s;"/>
+            <circle cx="100" cy="15" r="6" fill="#8a2be2"/>
+            
+            <!-- 机器人的头 -->
+            <rect x="50" y="45" width="100" height="75" rx="20" fill="#0A0A14" stroke="#00f0ff" stroke-width="4" class="drop-shadow-[0_0_15px_rgba(0,240,255,0.4)]"/>
+            
+            <!-- 萌萌的眼睛 -->
+            <circle cx="75" cy="80" r="9" fill="#00f0ff" class="group-hover:fill-purple-400 transition-colors duration-300 drop-shadow-[0_0_8px_rgba(0,240,255,0.8)]"/>
+            <circle cx="125" cy="80" r="9" fill="#00f0ff" class="group-hover:fill-purple-400 transition-colors duration-300 drop-shadow-[0_0_8px_rgba(0,240,255,0.8)]"/>
+            
+            <!-- 害羞的腮红 -->
+            <ellipse cx="60" cy="95" rx="8" ry="4" fill="#ff6b6b" opacity="0.6"/>
+            <ellipse cx="140" cy="95" rx="8" ry="4" fill="#ff6b6b" opacity="0.6"/>
+            
+            <!-- 微笑的嘴巴 (鼠标悬浮时变色) -->
+            <path d="M85 100 Q100 115 115 100" stroke="#00f0ff" stroke-width="4" stroke-linecap="round" fill="none" class="group-hover:stroke-purple-400 transition-colors duration-300"/>
+            
+            <!-- 机器人的身体 -->
+            <path d="M70 125 L130 125 L120 170 L80 170 Z" fill="#0A0A14" stroke="#8a2be2" stroke-width="4" stroke-linejoin="round"/>
+            
+            <!-- 悬浮的小手 (鼠标悬浮时手会向上挥舞) -->
+            <path d="M40 140 Q15 120 30 95" fill="none" stroke="#00f0ff" stroke-width="5" stroke-linecap="round" class="origin-bottom transform group-hover:-rotate-12 transition-transform duration-300"/>
+            <path d="M160 140 Q185 120 170 95" fill="none" stroke="#00f0ff" stroke-width="5" stroke-linecap="round" class="origin-bottom transform group-hover:rotate-12 transition-transform duration-300"/>
+        </svg>
+        
+        <!-- 交互提示文字 -->
+        <div class="mt-10 text-center relative z-10">
+            <p class="text-cyan-400 font-mono text-2xl tracking-[0.3em] font-bold animate-pulse group-hover:text-purple-400 transition-colors duration-300 drop-shadow-[0_0_10px_rgba(0,240,255,0.8)]">
+                CLICK TO START
+            </p>
+            <p class="text-cyan-100/60 text-sm mt-3 tracking-widest group-hover:text-cyan-100 transition-colors">
+                >> 点击唤醒具身智能引擎 <<
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- 控制交互的 JS 脚本 -->
+<script>
+    // 1. 页面一开始加载时，锁定背景不让用户提前往下滑动
+    document.body.style.overflow = 'hidden';
+    
+    // 2. 点击机器人后触发的开场动画函数
+    function enterResume() {
+        const cover = document.getElementById('robotCover');
+        
+        // 放大并变透明的科技感退场动画
+        cover.style.opacity = '0';
+        cover.style.transform = 'scale(1.1)';
+        cover.style.pointerEvents = 'none'; // 防止动画期间被重复点击
+        
+        // 恢复页面正常向下滚动
+        document.body.style.overflow = '';
+        document.body.style.overflowX = 'hidden'; // 保持你原有的横向隐藏逻辑
+        
+        // 等待 CSS 过渡动画(700ms)结束后，彻底从页面移除遮罩层
+        setTimeout(() => {
+            cover.style.display = 'none';
+            // 手动触发一次滚动事件，这样可以激活你原本代码中写好的卡片滑入(animate-on-scroll)动画
+            window.dispatchEvent(new Event('scroll'));
+        }, 700);
+    }
+</script>
+<!-- ========================================== -->
+<!-- 代码片段结束。 -->
+<!-- ========================================== -->
 
 <!-- 滚动变量钩子 (通过JS更新) -->
 <div id="scroll-root" style="--scroll: 0;">
@@ -187,9 +269,9 @@
         <!-- 五、技能清单 & 六、教育背景 -->
         <section id="skills" class="scroll-mt-24 grid grid-cols-1 lg:grid-cols-2 gap-10">
             <!-- 技能列 -->
-            <div text white class="animate-on-scroll opacity-0 translate-y-16 transform" id="skillCol"></div>
+            <div class="animate-on-scroll opacity-0 translate-y-16 transform text-white" id="skillCol"></div>
             <!-- 教育列 -->
-            <div text white class="animate-on-scroll opacity-0 translate-y-16 transform" id="eduCol"></div>
+            <div class="animate-on-scroll opacity-0 translate-y-16 transform text-white" id="eduCol"></div>
         </section>
 
         <!-- 底部留白 -->
