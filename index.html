@@ -280,20 +280,41 @@
         </div>
     </main>
 
-    <!-- 自定义光标 -->
-    <div id="customCursor" class="fixed pointer-events-none z-[9999] transition-transform duration-75 ease-out flex items-center justify-center mix-blend-screen" style="left: -100px; top: -100px; transform: translate(-50%, -50%);">
-        <div class="transition-all duration-300 scale-100" id="cursorInner">
-            <div class="animate-pulse flex items-center justify-center filter drop-shadow-[0_0_15px_rgba(0,240,255,0.8)]">
-                <svg width="40" height="40" viewBox="0 0 100 100" fill="none">
-                    <line x1="50" y1="20" x2="50" y2="5" stroke="#00f0ff" stroke-width="4"/>
-                    <circle cx="50" cy="5" r="4" fill="#8a2be2"/>
-                    <rect x="15" y="20" width="70" height="50" rx="15" fill="rgba(10,10,25,0.8)" stroke="#00f0ff" stroke-width="3"/>
-                    <!-- 默认笑脸 -->
+<!-- 自定义光标 (带动态表情) -->
+<div id="customCursor" class="fixed pointer-events-none z-[9999] transition-transform duration-75 ease-out flex items-center justify-center mix-blend-screen" style="left: -100px; top: -100px; transform: translate(-50%, -50%);">
+    <div class="transition-all duration-300 scale-100" id="cursorInner">
+        <div id="cursorGlow" class="flex items-center justify-center filter drop-shadow-[0_0_15px_rgba(0,240,255,0.8)] transition-all duration-300">
+            <svg width="40" height="40" viewBox="0 0 100 100" fill="none">
+                <!-- 天线 -->
+                <line id="antennaLine" x1="50" y1="20" x2="50" y2="5" stroke="#00f0ff" stroke-width="4" class="transition-colors duration-300"/>
+                <circle cx="50" cy="5" r="4" fill="#8a2be2" class="animate-pulse"/>
+                
+                <!-- 脸部边框 -->
+                <rect id="faceBorder" x="15" y="20" width="70" height="50" rx="15" fill="rgba(10,10,25,0.8)" stroke="#00f0ff" stroke-width="3" class="transition-colors duration-300"/>
+                
+                <!-- 表情1：默认静止 (o _ o) -->
+                <g id="faceDefault" class="transition-opacity duration-200 opacity-100">
                     <circle cx="35" cy="40" r="6" fill="#00f0ff"/>
                     <circle cx="65" cy="40" r="6" fill="#00f0ff"/>
                     <line x1="40" y1="55" x2="60" y2="55" stroke="#00f0ff" stroke-width="3" stroke-linecap="round"/>
-                </svg>
-            </div>
+                </g>
+
+                <!-- 表情2：悬停开心 (^ ▽ ^) + 腮红 -->
+                <g id="faceHover" class="transition-opacity duration-200 opacity-0">
+                    <path d="M30 42 Q35 34 40 42" fill="none" stroke="#b87aff" stroke-width="4" stroke-linecap="round"/>
+                    <path d="M60 42 Q65 34 70 42" fill="none" stroke="#b87aff" stroke-width="4" stroke-linecap="round"/>
+                    <path d="M40 52 Q50 62 60 52" fill="none" stroke="#b87aff" stroke-width="4" stroke-linecap="round"/>
+                    <ellipse cx="25" cy="48" rx="5" ry="3" fill="#ff6b6b" opacity="0.8"/>
+                    <ellipse cx="75" cy="48" rx="5" ry="3" fill="#ff6b6b" opacity="0.8"/>
+                </g>
+
+                <!-- 表情3：移动专注 (> <) -->
+                <g id="faceMove" class="transition-opacity duration-200 opacity-0">
+                    <path d="M28 38 L38 42 L28 46" fill="none" stroke="#00f0ff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M72 38 L62 42 L72 46" fill="none" stroke="#00f0ff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="50" cy="55" r="2" fill="#00f0ff"/>
+                </g>
+            </svg>
         </div>
     </div>
 </div>
@@ -445,7 +466,7 @@
             scrollRoot.style.setProperty('--scroll', scrollY);
         });
 
-                // ================= 新版表情光标逻辑 (含卡片光斑) =================
+        // ================= 新版表情光标逻辑 (含卡片光斑) =================
         const cursor = document.getElementById('customCursor');
         const faceDefault = document.getElementById('faceDefault');
         const faceHover = document.getElementById('faceHover');
